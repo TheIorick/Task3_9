@@ -3,18 +3,125 @@
         xmlns:vm="using:Task3_9.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
         x:Class="Task3_9.Views.MainWindow"
-        x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="Task3_9">
+        Title="Sports Competition Simulator">
 
     <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-
+    <Grid RowDefinitions="Auto,*">
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10" Spacing="10">
+            <TextBlock Text="{Binding Greeting}" VerticalAlignment="Center" FontWeight="Bold"/>
+            <Button Content="Add Competition" Command="{Binding AddCompetitionCommand}"/>
+            <Button Content="Remove Competition" Command="{Binding RemoveCompetitionCommand}"/>
+        </StackPanel>
+        
+        <TabControl Grid.Row="1" Items="{Binding Competitions}" SelectedItem="{Binding SelectedCompetition}">
+            <TabControl.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding CompetitionName}"/>
+                </DataTemplate>
+            </TabControl.ItemTemplate>
+            <TabControl.ContentTemplate>
+                <DataTemplate>
+                    <Grid RowDefinitions="Auto,*,Auto" Margin="10">
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
+                            <Button Content="Start Competition" Command="{Binding StartCompetitionCommand}"/>
+                            <Button Content="Stop Competition" Command="{Binding StopCompetitionCommand}"/>
+                            <TextBlock Text="{Binding CompetitionStatus}" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                        </StackPanel>
+                        
+                        <Grid Grid.Row="1" ColumnDefinitions="*,300">
+                            <Border Grid.Column="0" 
+                                    BorderBrush="Black" 
+                                    BorderThickness="1" 
+                                    Margin="5" 
+                                    Background="LightGray">
+                                <Canvas Width="{Binding TrackLength}" Height="{Binding TrackHeight}">
+                                    <!-- Finish Line -->
+                                    <Line StartPoint="{Binding TrackLength, Converter={StaticResource FinishLineStartConverter}}"
+                                          EndPoint="{Binding TrackLength, Converter={StaticResource FinishLineEndConverter}}"
+                                          Stroke="Red" StrokeThickness="2" StrokeDashArray="5,5"/>
+                                    
+                                    <!-- Athletes -->
+                                    <ItemsControl Items="{Binding Athletes}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <Canvas/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid>
+                                                    <Ellipse Width="30" Height="30" 
+                                                             Fill="{Binding IsInjured, Converter={StaticResource InjuryColorConverter}}"
+                                                             Stroke="Black"
+                                                             StrokeThickness="2">
+                                                        <Ellipse.RenderTransform>
+                                                            <TranslateTransform X="-15" Y="-15"/>
+                                                        </Ellipse.RenderTransform>
+                                                    </Ellipse>
+                                                    <TextBlock Text="{Binding Name}" 
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center"
+                                                               Foreground="White"
+                                                               FontWeight="Bold">
+                                                        <TextBlock.RenderTransform>
+                                                            <TranslateTransform X="-15" Y="-15"/>
+                                                        </TextBlock.RenderTransform>
+                                                    </TextBlock>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                        <ItemsControl.ItemContainerStyle>
+                                            <Style Selector="ContentPresenter">
+                                                <Setter Property="Canvas.Left" Value="{Binding Position.X}"/>
+                                                <Setter Property="Canvas.Top" Value="{Binding Position.Y}"/>
+                                            </Style>
+                                        </ItemsControl.ItemContainerStyle>
+                                    </ItemsControl>
+                                </Canvas>
+                            </Border>
+                            
+                            <Border Grid.Column="1" 
+                                    BorderBrush="Black" 
+                                    BorderThickness="1" 
+                                    Margin="5">
+                                <ScrollViewer>
+                                    <TextBox Text="{Binding EventLog}" 
+                                             IsReadOnly="True" 
+                                             TextWrapping="Wrap"
+                                             FontFamily="Consolas"
+                                             AcceptsReturn="True"/>
+                                </ScrollViewer>
+                            </Border>
+                        </Grid>
+                        
+                        <Border Grid.Row="2" 
+                                BorderBrush="Black" 
+                                BorderThickness="1" 
+                                Margin="5"
+                                Padding="5">
+                            <ItemsControl Items="{Binding Athletes}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="120,*" Margin="0,2">
+                                            <TextBlock Grid.Column="0" Text="{Binding Name}" FontWeight="SemiBold"/>
+                                            <ProgressBar Grid.Column="1" 
+                                                        Value="{Binding Progress}" 
+                                                        Maximum="{Binding DataContext.TrackLength, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                        Height="20"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
+                    </Grid>
+                </DataTemplate>
+            </TabControl.ContentTemplate>
+        </TabControl>
+    </Grid>
 </Window>
